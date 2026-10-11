@@ -18,6 +18,10 @@ const timeline = createTimeline(systemDesign);
 
 const TOTAL_FRAMES = timeline.totalFrames;
 
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+
 const TIMELINE = Object.fromEntries(
     timeline.sections.map((section) => [section.id, section])
 ) as Record<
@@ -30,6 +34,78 @@ const TIMELINE = Object.fromEntries(
     }
 >;
 
+/*
+ * Original visual timeline was designed for 1800 frames (60s).
+ *
+ * The audio timeline is now dynamic (~89s).
+ *
+ * We map each real audio section back to the original
+ * visual section timeline so all existing animations
+ * keep their original timing and style.
+ */
+
+const ORIGINAL_SECTION_ENDS = [
+    120,   // hook
+    330,   // problem
+    600,   // scalability
+    870,   // reliability
+    1140,  // maturity
+    1320,  // interview
+    1605,  // career
+    1800,  // final
+];
+
+const SECTION_IDS = [
+    "hook",
+    "problem",
+    "scalability",
+    "reliability",
+    "maturity",
+    "interview",
+    "career",
+    "final",
+] as const;
+
+const getVisualFrame = (frame: number) => {
+    for (let i = 0; i < SECTION_IDS.length; i++) {
+        const id = SECTION_IDS[i];
+        const section = TIMELINE[id];
+
+        const realStart = section.start;
+        const realEnd =
+            section.start + section.duration;
+
+        const visualStart =
+            i === 0
+                ? 0
+                : ORIGINAL_SECTION_ENDS[i - 1];
+
+        const visualEnd =
+            ORIGINAL_SECTION_ENDS[i];
+
+        if (
+            frame <= realEnd ||
+            i === SECTION_IDS.length - 1
+        ) {
+            const progress = interpolate(
+                frame,
+                [realStart, realEnd],
+                [0, 1],
+                {
+                    extrapolateLeft: "clamp",
+                    extrapolateRight: "clamp",
+                }
+            );
+
+            return (
+                visualStart +
+                (visualEnd - visualStart) * progress
+            );
+        }
+    }
+
+    return 1800;
+};
 
 /* ============================================================
    THEME
@@ -143,6 +219,7 @@ const Icon: React.FC<{
             {type === "users" && (
                 <>
                     <circle cx="50" cy="28" r="12" {...common} />
+
                     <path
                         d="M27 75c2-15 12-24 23-24s21 9 23 24"
                         {...common}
@@ -937,7 +1014,9 @@ const ServerNode: React.FC<{
                     height: 155,
                     opacity,
                     transform: `scale(${pulse})`,
-                    border: `2px solid ${failed ? COLORS.red : color
+                    border: `2px solid ${failed
+                        ? COLORS.red
+                        : color
                         }`,
                     borderRadius: 20,
                     background: "rgba(7,16,28,0.95)",
@@ -954,7 +1033,9 @@ const ServerNode: React.FC<{
                 <Icon
                     type="server"
                     color={
-                        failed ? COLORS.red : color
+                        failed
+                            ? COLORS.red
+                            : color
                     }
                     size={58}
                 />
@@ -986,7 +1067,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/01-hook.mp3"
+                    "audio/hook.mp3"
                 )}
             />
         </Sequence>
@@ -997,7 +1078,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/02-problem.mp3"
+                    "audio/problem.mp3"
                 )}
             />
         </Sequence>
@@ -1008,7 +1089,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/03-scalability.mp3"
+                    "audio/scalability.mp3"
                 )}
             />
         </Sequence>
@@ -1019,7 +1100,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/04-reliability.mp3"
+                    "audio/reliability.mp3"
                 )}
             />
         </Sequence>
@@ -1030,7 +1111,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/05-maturity.mp3"
+                    "audio/maturity.mp3"
                 )}
             />
         </Sequence>
@@ -1041,7 +1122,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/06-interview.mp3"
+                    "audio/interview.mp3"
                 )}
             />
         </Sequence>
@@ -1052,7 +1133,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/07-career.mp3"
+                    "audio/career.mp3"
                 )}
             />
         </Sequence>
@@ -1063,7 +1144,7 @@ const AudioTrack: React.FC = () => (
         >
             <Audio
                 src={staticFile(
-                    "audio/08-final.mp3"
+                    "audio/final.mp3"
                 )}
             />
         </Sequence>
@@ -1076,11 +1157,27 @@ const AudioTrack: React.FC = () => (
 
 export const WhySystemDesignMattersScene: React.FC =
     () => {
-        const frame = useCurrentFrame();
+        /*
+         * realFrame:
+         * Actual frame from the ~89s audio timeline.
+         *
+         * visualFrame:
+         * Mapped frame from the original 1800-frame
+         * visual timeline.
+         *
+         * `frame` is intentionally aliased to visualFrame
+         * so all existing animation code below keeps working.
+         */
+        const realFrame = useCurrentFrame();
+        const visualFrame =
+            getVisualFrame(realFrame);
+
+        const frame = visualFrame;
+
         const { width } = useVideoConfig();
 
         const backgroundGlow = interpolate(
-            frame,
+            realFrame,
             [0, TOTAL_FRAMES / 2, TOTAL_FRAMES],
             [0.8, 1.1, 0.8],
             {
@@ -1141,7 +1238,8 @@ export const WhySystemDesignMattersScene: React.FC =
                         borderRadius: "50%",
                         background: COLORS.cyan,
                         opacity:
-                            0.035 * backgroundGlow,
+                            0.035 *
+                            backgroundGlow,
                         filter: "blur(100px)",
                     }}
                 />
@@ -1156,7 +1254,8 @@ export const WhySystemDesignMattersScene: React.FC =
                         borderRadius: "50%",
                         background: COLORS.purple,
                         opacity:
-                            0.04 * backgroundGlow,
+                            0.04 *
+                            backgroundGlow,
                         filter: "blur(100px)",
                     }}
                 />
@@ -1171,12 +1270,14 @@ export const WhySystemDesignMattersScene: React.FC =
                         position: "absolute",
                         inset: 0,
                         opacity: interpolate(
-                            frame,
+                            visualFrame,
                             [0, 10, 105, 120],
                             [0, 1, 1, 0],
                             {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
+                                extrapolateLeft:
+                                    "clamp",
+                                extrapolateRight:
+                                    "clamp",
                             }
                         ),
                     }}
@@ -1206,7 +1307,9 @@ export const WhySystemDesignMattersScene: React.FC =
                         >
                             <Icon
                                 type="code"
-                                color={COLORS.cyan}
+                                color={
+                                    COLORS.cyan
+                                }
                                 size={120}
                             />
                         </div>
@@ -1229,9 +1332,9 @@ export const WhySystemDesignMattersScene: React.FC =
                                 )}px)`,
                             }}
                         >
-                            Writing code
+                            Why System Design
                             <br />
-                            is only half the job.
+                            Is Important
                         </div>
 
                         <div
@@ -1275,8 +1378,10 @@ export const WhySystemDesignMattersScene: React.FC =
                             [105, 120, 315, 330],
                             [0, 1, 1, 0],
                             {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
+                                extrapolateLeft:
+                                    "clamp",
+                                extrapolateRight:
+                                    "clamp",
                             }
                         ),
                     }}
@@ -1311,7 +1416,9 @@ export const WhySystemDesignMattersScene: React.FC =
                     >
                         <Icon
                             type="users"
-                            color={COLORS.green}
+                            color={
+                                COLORS.green
+                            }
                             size={90}
                         />
 
@@ -1356,14 +1463,18 @@ export const WhySystemDesignMattersScene: React.FC =
                     >
                         <Icon
                             type="users"
-                            color={COLORS.orange}
+                            color={
+                                COLORS.orange
+                            }
                             size={90}
                         />
 
                         <Label
                             size={30}
                             weight={900}
-                            color={COLORS.orange}
+                            color={
+                                COLORS.orange
+                            }
                         >
                             1,000 users
                         </Label>
@@ -1409,7 +1520,9 @@ export const WhySystemDesignMattersScene: React.FC =
                         <Label
                             size={30}
                             weight={900}
-                            color={COLORS.red}
+                            color={
+                                COLORS.red
+                            }
                         >
                             1,000,000
                         </Label>
@@ -1460,8 +1573,10 @@ export const WhySystemDesignMattersScene: React.FC =
                             [315, 330, 585, 600],
                             [0, 1, 1, 0],
                             {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
+                                extrapolateLeft:
+                                    "clamp",
+                                extrapolateRight:
+                                    "clamp",
                             }
                         ),
                     }}
@@ -1488,15 +1603,20 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 height: "100%",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                flexDirection:
+                                    "column",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
                                 gap: 8,
                             }}
                         >
                             <Icon
                                 type="users"
-                                color={COLORS.green}
+                                color={
+                                    COLORS.green
+                                }
                                 size={70}
                             />
 
@@ -1519,15 +1639,20 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 height: "100%",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                flexDirection:
+                                    "column",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
                                 gap: 8,
                             }}
                         >
                             <Icon
                                 type="load-balancer"
-                                color={COLORS.cyan}
+                                color={
+                                    COLORS.cyan
+                                }
                                 size={70}
                             />
 
@@ -1624,7 +1749,9 @@ export const WhySystemDesignMattersScene: React.FC =
                     >
                         <Label
                             size={25}
-                            color={COLORS.green}
+                            color={
+                                COLORS.green
+                            }
                             weight={900}
                         >
                             Scale Out
@@ -1657,8 +1784,10 @@ export const WhySystemDesignMattersScene: React.FC =
                             [585, 600, 855, 870],
                             [0, 1, 1, 0],
                             {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
+                                extrapolateLeft:
+                                    "clamp",
+                                extrapolateRight:
+                                    "clamp",
                             }
                         ),
                     }}
@@ -1667,7 +1796,9 @@ export const WhySystemDesignMattersScene: React.FC =
                         number="2"
                         title="Reliability"
                         subtitle="What happens when something fails?"
-                        color={COLORS.purple}
+                        color={
+                            COLORS.purple
+                        }
                         frame={frame}
                         start={600}
                     />
@@ -1685,15 +1816,20 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 height: "100%",
                                 display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                flexDirection: "column",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
+                                flexDirection:
+                                    "column",
                                 gap: 8,
                             }}
                         >
                             <Icon
                                 type="load-balancer"
-                                color={COLORS.cyan}
+                                color={
+                                    COLORS.cyan
+                                }
                                 size={65}
                             />
 
@@ -1710,7 +1846,9 @@ export const WhySystemDesignMattersScene: React.FC =
                         color={COLORS.green}
                         frame={frame}
                         start={640}
-                        failed={frame >= 735}
+                        failed={
+                            frame >= 735
+                        }
                     />
 
                     <ServerNode
@@ -1728,7 +1866,9 @@ export const WhySystemDesignMattersScene: React.FC =
                             y1={585}
                             x2={520}
                             y2={535}
-                            color={COLORS.green}
+                            color={
+                                COLORS.green
+                            }
                             frame={frame}
                             start={680}
                             packet
@@ -1738,7 +1878,8 @@ export const WhySystemDesignMattersScene: React.FC =
                     {frame >= 705 && (
                         <div
                             style={{
-                                position: "absolute",
+                                position:
+                                    "absolute",
                                 left: 725,
                                 top: 475,
                                 opacity: fade(
@@ -1757,15 +1898,21 @@ export const WhySystemDesignMattersScene: React.FC =
                                 style={{
                                     width: 110,
                                     height: 110,
-                                    borderRadius: "50%",
+                                    borderRadius:
+                                        "50%",
                                     border: `4px solid ${COLORS.red}`,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: COLORS.red,
+                                    display:
+                                        "flex",
+                                    alignItems:
+                                        "center",
+                                    justifyContent:
+                                        "center",
+                                    color:
+                                        COLORS.red,
                                     fontSize: 60,
                                     fontWeight: 900,
-                                    boxShadow: `0 0 40px ${COLORS.red}45`,
+                                    boxShadow:
+                                        `0 0 40px ${COLORS.red}45`,
                                 }}
                             >
                                 ×
@@ -1774,8 +1921,10 @@ export const WhySystemDesignMattersScene: React.FC =
                             <div
                                 style={{
                                     marginTop: 12,
-                                    textAlign: "center",
-                                    color: COLORS.red,
+                                    textAlign:
+                                        "center",
+                                    color:
+                                        COLORS.red,
                                     fontSize: 20,
                                     fontWeight: 900,
                                 }}
@@ -1792,7 +1941,9 @@ export const WhySystemDesignMattersScene: React.FC =
                                 y1={585}
                                 x2={520}
                                 y2={755}
-                                color={COLORS.orange}
+                                color={
+                                    COLORS.orange
+                                }
                                 frame={frame}
                                 start={750}
                                 packet
@@ -1800,7 +1951,8 @@ export const WhySystemDesignMattersScene: React.FC =
 
                             <div
                                 style={{
-                                    position: "absolute",
+                                    position:
+                                        "absolute",
                                     left: 730,
                                     top: 730,
                                     opacity: fade(
@@ -1808,18 +1960,23 @@ export const WhySystemDesignMattersScene: React.FC =
                                         760,
                                         775
                                     ),
-                                    textAlign: "center",
+                                    textAlign:
+                                        "center",
                                 }}
                             >
                                 <Icon
                                     type="shield"
-                                    color={COLORS.green}
+                                    color={
+                                        COLORS.green
+                                    }
                                     size={70}
                                 />
 
                                 <Label
                                     size={21}
-                                    color={COLORS.green}
+                                    color={
+                                        COLORS.green
+                                    }
                                     weight={900}
                                 >
                                     System stays alive
@@ -1844,7 +2001,9 @@ export const WhySystemDesignMattersScene: React.FC =
                     >
                         <Label
                             size={26}
-                            color={COLORS.purple}
+                            color={
+                                COLORS.purple
+                            }
                             weight={900}
                         >
                             Redundancy + Failover
@@ -1866,8 +2025,10 @@ export const WhySystemDesignMattersScene: React.FC =
                             [855, 870, 1125, 1140],
                             [0, 1, 1, 0],
                             {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
+                                extrapolateLeft:
+                                    "clamp",
+                                extrapolateRight:
+                                    "clamp",
                             }
                         ),
                     }}
@@ -1876,7 +2037,9 @@ export const WhySystemDesignMattersScene: React.FC =
                         number="3"
                         title="Engineering Maturity"
                         subtitle="Think beyond individual functions."
-                        color={COLORS.orange}
+                        color={
+                            COLORS.orange
+                        }
                         frame={frame}
                         start={870}
                     />
@@ -1894,15 +2057,20 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 height: "100%",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                flexDirection:
+                                    "column",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
                                 gap: 8,
                             }}
                         >
                             <Icon
                                 type="code"
-                                color={COLORS.cyan}
+                                color={
+                                    COLORS.cyan
+                                }
                                 size={65}
                             />
 
@@ -1925,15 +2093,20 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 height: "100%",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                flexDirection:
+                                    "column",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
                                 gap: 8,
                             }}
                         >
                             <Icon
                                 type="server"
-                                color={COLORS.green}
+                                color={
+                                    COLORS.green
+                                }
                                 size={65}
                             />
 
@@ -1956,15 +2129,20 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 height: "100%",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                flexDirection:
+                                    "column",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
                                 gap: 8,
                             }}
                         >
                             <Icon
                                 type="network"
-                                color={COLORS.purple}
+                                color={
+                                    COLORS.purple
+                                }
                                 size={65}
                             />
 
@@ -1987,15 +2165,20 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 height: "100%",
                                 display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                flexDirection:
+                                    "column",
+                                alignItems:
+                                    "center",
+                                justifyContent:
+                                    "center",
                                 gap: 8,
                             }}
                         >
                             <Icon
                                 type="servers"
-                                color={COLORS.orange}
+                                color={
+                                    COLORS.orange
+                                }
                                 size={65}
                             />
 
@@ -2042,7 +2225,8 @@ export const WhySystemDesignMattersScene: React.FC =
                             left: 80,
                             right: 80,
                             display: "flex",
-                            justifyContent: "center",
+                            justifyContent:
+                                "center",
                             gap: 14,
                             opacity: fade(
                                 frame,
@@ -2052,27 +2236,43 @@ export const WhySystemDesignMattersScene: React.FC =
                         }}
                     >
                         {[
-                            ["SCALE", COLORS.cyan],
-                            ["LATENCY", COLORS.green],
-                            ["COST", COLORS.orange],
-                            ["FAILURE", COLORS.red],
-                        ].map(([text, color]) => (
-                            <div
-                                key={text}
-                                style={{
-                                    padding: "14px 22px",
-                                    borderRadius: 15,
-                                    border: `2px solid ${color}`,
-                                    color,
-                                    fontSize: 19,
-                                    fontWeight: 900,
-                                    background:
-                                        "rgba(7,16,28,0.9)",
-                                }}
-                            >
-                                {text}
-                            </div>
-                        ))}
+                            [
+                                "SCALE",
+                                COLORS.cyan,
+                            ],
+                            [
+                                "LATENCY",
+                                COLORS.green,
+                            ],
+                            [
+                                "COST",
+                                COLORS.orange,
+                            ],
+                            [
+                                "FAILURE",
+                                COLORS.red,
+                            ],
+                        ].map(
+                            ([text, color]) => (
+                                <div
+                                    key={text}
+                                    style={{
+                                        padding:
+                                            "14px 22px",
+                                        borderRadius:
+                                            15,
+                                        border: `2px solid ${color}`,
+                                        color,
+                                        fontSize: 19,
+                                        fontWeight: 900,
+                                        background:
+                                            "rgba(7,16,28,0.9)",
+                                    }}
+                                >
+                                    {text}
+                                </div>
+                            )
+                        )}
                     </div>
 
                     <div
@@ -2111,8 +2311,10 @@ export const WhySystemDesignMattersScene: React.FC =
                             [1125, 1140, 1305, 1320],
                             [0, 1, 1, 0],
                             {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
+                                extrapolateLeft:
+                                    "clamp",
+                                extrapolateRight:
+                                    "clamp",
                             }
                         ),
                     }}
@@ -2160,7 +2362,8 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 marginTop: 55,
                                 display: "flex",
-                                justifyContent: "center",
+                                justifyContent:
+                                    "center",
                                 gap: 18,
                             }}
                         >
@@ -2181,7 +2384,14 @@ export const WhySystemDesignMattersScene: React.FC =
                                     COLORS.orange,
                                 ],
                             ].map(
-                                ([title, icon, color], i) => (
+                                (
+                                    [
+                                        title,
+                                        icon,
+                                        color,
+                                    ],
+                                    i
+                                ) => (
                                     <div
                                         key={title}
                                         style={{
@@ -2191,21 +2401,31 @@ export const WhySystemDesignMattersScene: React.FC =
                                             borderRadius: 20,
                                             background:
                                                 "rgba(7,16,28,0.9)",
-                                            display: "flex",
+                                            display:
+                                                "flex",
                                             flexDirection:
                                                 "column",
-                                            alignItems: "center",
+                                            alignItems:
+                                                "center",
                                             justifyContent:
                                                 "center",
                                             opacity: fade(
                                                 frame,
-                                                1190 + i * 12,
-                                                1202 + i * 12
+                                                1190 +
+                                                i *
+                                                12,
+                                                1202 +
+                                                i *
+                                                12
                                             ),
                                             transform: `scale(${scaleIn(
                                                 frame,
-                                                1190 + i * 12,
-                                                1202 + i * 12
+                                                1190 +
+                                                i *
+                                                12,
+                                                1202 +
+                                                i *
+                                                12
                                             )})`,
                                         }}
                                     >
@@ -2263,8 +2483,10 @@ export const WhySystemDesignMattersScene: React.FC =
                             [1305, 1320, 1590, 1605],
                             [0, 1, 1, 0],
                             {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
+                                extrapolateLeft:
+                                    "clamp",
+                                extrapolateRight:
+                                    "clamp",
                             }
                         ),
                     }}
@@ -2288,7 +2510,8 @@ export const WhySystemDesignMattersScene: React.FC =
                     >
                         <div
                             style={{
-                                position: "absolute",
+                                position:
+                                    "absolute",
                                 left: 80,
                                 right: 80,
                                 top: 80,
@@ -2300,20 +2523,23 @@ export const WhySystemDesignMattersScene: React.FC =
 
                         <div
                             style={{
-                                position: "absolute",
+                                position:
+                                    "absolute",
                                 left: 80,
                                 top: 80,
                                 width: `${Math.min(
                                     100,
                                     Math.max(
                                         0,
-                                        ((frame - 1350) /
+                                        ((frame -
+                                            1350) /
                                             150) *
                                         100
                                     )
                                 )}%`,
                                 height: 4,
-                                background: COLORS.green,
+                                background:
+                                    COLORS.green,
                                 boxShadow:
                                     `0 0 15px ${COLORS.green}`,
                             }}
@@ -2324,48 +2550,56 @@ export const WhySystemDesignMattersScene: React.FC =
                                 x: 20,
                                 title: "Developer",
                                 icon: "code" as IconType,
-                                color: COLORS.cyan,
+                                color:
+                                    COLORS.cyan,
                                 start: 1350,
                             },
                             {
                                 x: 275,
                                 title: "Senior Engineer",
                                 icon: "server" as IconType,
-                                color: COLORS.green,
+                                color:
+                                    COLORS.green,
                                 start: 1390,
                             },
                             {
                                 x: 530,
                                 title: "Tech Lead",
                                 icon: "network" as IconType,
-                                color: COLORS.purple,
+                                color:
+                                    COLORS.purple,
                                 start: 1430,
                             },
                             {
                                 x: 785,
                                 title: "Architect",
                                 icon: "servers" as IconType,
-                                color: COLORS.orange,
+                                color:
+                                    COLORS.orange,
                                 start: 1470,
                             },
                         ].map((item) => (
                             <div
                                 key={item.title}
                                 style={{
-                                    position: "absolute",
+                                    position:
+                                        "absolute",
                                     left: item.x,
                                     top: 0,
                                     width: 200,
-                                    textAlign: "center",
+                                    textAlign:
+                                        "center",
                                     opacity: fade(
                                         frame,
                                         item.start,
-                                        item.start + 12
+                                        item.start +
+                                        12
                                     ),
                                     transform: `translateY(${slideUp(
                                         frame,
                                         item.start,
-                                        item.start + 12
+                                        item.start +
+                                        12
                                     )}px)`,
                                 }}
                             >
@@ -2373,21 +2607,30 @@ export const WhySystemDesignMattersScene: React.FC =
                                     style={{
                                         width: 120,
                                         height: 120,
-                                        margin: "0 auto",
-                                        borderRadius: "50%",
+                                        margin:
+                                            "0 auto",
+                                        borderRadius:
+                                            "50%",
                                         border: `3px solid ${item.color}`,
                                         background:
                                             "rgba(7,16,28,0.95)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
+                                        display:
+                                            "flex",
+                                        alignItems:
+                                            "center",
+                                        justifyContent:
+                                            "center",
                                         boxShadow:
                                             `0 0 30px ${item.color}22`,
                                     }}
                                 >
                                     <Icon
-                                        type={item.icon}
-                                        color={item.color}
+                                        type={
+                                            item.icon
+                                        }
+                                        color={
+                                            item.color
+                                        }
                                         size={65}
                                     />
                                 </div>
@@ -2434,7 +2677,8 @@ export const WhySystemDesignMattersScene: React.FC =
                                 marginTop: 15,
                                 fontSize: 38,
                                 fontWeight: 900,
-                                color: COLORS.green,
+                                color:
+                                    COLORS.green,
                             }}
                         >
                             FEATURES → SERVICES → SYSTEMS
@@ -2469,7 +2713,9 @@ export const WhySystemDesignMattersScene: React.FC =
                     >
                         <Icon
                             type="network"
-                            color={COLORS.cyan}
+                            color={
+                                COLORS.cyan
+                            }
                             size={90}
                         />
 
@@ -2501,7 +2747,8 @@ export const WhySystemDesignMattersScene: React.FC =
                             left: 70,
                             right: 70,
                             display: "flex",
-                            flexDirection: "column",
+                            flexDirection:
+                                "column",
                             alignItems: "center",
                         }}
                     >
@@ -2509,92 +2756,123 @@ export const WhySystemDesignMattersScene: React.FC =
                             {
                                 title: "CODE",
                                 icon: "code" as IconType,
-                                color: COLORS.cyan,
+                                color:
+                                    COLORS.cyan,
                                 start: 1630,
                             },
                             {
                                 title: "ARCHITECTURE",
                                 icon: "network" as IconType,
-                                color: COLORS.green,
+                                color:
+                                    COLORS.green,
                                 start: 1660,
                             },
                             {
                                 title: "SYSTEMS",
                                 icon: "servers" as IconType,
-                                color: COLORS.purple,
+                                color:
+                                    COLORS.purple,
                                 start: 1690,
                             },
                             {
                                 title: "REAL WORLD",
                                 icon: "users" as IconType,
-                                color: COLORS.orange,
+                                color:
+                                    COLORS.orange,
                                 start: 1720,
                             },
-                        ].map((item, index) => (
-                            <React.Fragment
-                                key={item.title}
-                            >
-                                <div
-                                    style={{
-                                        width: 500,
-                                        height: 125,
-                                        border: `2px solid ${item.color}`,
-                                        borderRadius: 22,
-                                        background:
-                                            "rgba(7,16,28,0.92)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        padding: "0 30px",
-                                        boxSizing: "border-box",
-                                        opacity: fade(
-                                            frame,
-                                            item.start,
-                                            item.start + 12
-                                        ),
-                                        transform: `scale(${scaleIn(
-                                            frame,
-                                            item.start,
-                                            item.start + 12
-                                        )})`,
-                                        boxShadow:
-                                            `0 0 30px ${item.color}18`,
-                                    }}
+                        ].map(
+                            (
+                                item,
+                                index
+                            ) => (
+                                <React.Fragment
+                                    key={
+                                        item.title
+                                    }
                                 >
-                                    <Icon
-                                        type={item.icon}
-                                        color={item.color}
-                                        size={62}
-                                    />
-
                                     <div
                                         style={{
-                                            marginLeft: 25,
-                                            fontSize: 30,
-                                            fontWeight: 900,
-                                            color: COLORS.white,
+                                            width: 500,
+                                            height: 125,
+                                            border: `2px solid ${item.color}`,
+                                            borderRadius: 22,
+                                            background:
+                                                "rgba(7,16,28,0.92)",
+                                            display:
+                                                "flex",
+                                            alignItems:
+                                                "center",
+                                            padding:
+                                                "0 30px",
+                                            boxSizing:
+                                                "border-box",
+                                            opacity:
+                                                fade(
+                                                    frame,
+                                                    item.start,
+                                                    item.start +
+                                                    12
+                                                ),
+                                            transform: `scale(${scaleIn(
+                                                frame,
+                                                item.start,
+                                                item.start +
+                                                12
+                                            )})`,
+                                            boxShadow:
+                                                `0 0 30px ${item.color}18`,
                                         }}
                                     >
-                                        {item.title}
-                                    </div>
-                                </div>
+                                        <Icon
+                                            type={
+                                                item.icon
+                                            }
+                                            color={
+                                                item.color
+                                            }
+                                            size={
+                                                62
+                                            }
+                                        />
 
-                                {index < 3 && (
-                                    <div
-                                        style={{
-                                            width: 4,
-                                            height: 48,
-                                            background:
-                                                COLORS.white,
-                                            opacity: fade(
-                                                frame,
-                                                item.start + 12,
-                                                item.start + 22
-                                            ),
-                                        }}
-                                    />
-                                )}
-                            </React.Fragment>
-                        ))}
+                                        <div
+                                            style={{
+                                                marginLeft: 25,
+                                                fontSize: 30,
+                                                fontWeight: 900,
+                                                color:
+                                                    COLORS.white,
+                                            }}
+                                        >
+                                            {
+                                                item.title
+                                            }
+                                        </div>
+                                    </div>
+
+                                    {index <
+                                        3 && (
+                                            <div
+                                                style={{
+                                                    width: 4,
+                                                    height: 48,
+                                                    background:
+                                                        COLORS.white,
+                                                    opacity:
+                                                        fade(
+                                                            frame,
+                                                            item.start +
+                                                            12,
+                                                            item.start +
+                                                            22
+                                                        ),
+                                                }}
+                                            />
+                                        )}
+                                </React.Fragment>
+                            )
+                        )}
                     </div>
 
                     <div
@@ -2615,7 +2893,8 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 fontSize: 29,
                                 fontWeight: 900,
-                                color: COLORS.white,
+                                color:
+                                    COLORS.white,
                             }}
                         >
                             Learn the concepts.
@@ -2625,7 +2904,8 @@ export const WhySystemDesignMattersScene: React.FC =
                             style={{
                                 marginTop: 8,
                                 fontSize: 22,
-                                color: COLORS.green,
+                                color:
+                                    COLORS.green,
                                 fontWeight: 800,
                             }}
                         >
@@ -2655,7 +2935,9 @@ export const WhySystemDesignMattersScene: React.FC =
                             height: "100%",
                             width: `${Math.min(
                                 100,
-                                (frame / TOTAL_FRAMES) * 100
+                                (realFrame /
+                                    TOTAL_FRAMES) *
+                                100
                             )}%`,
                             borderRadius: 10,
                             background:

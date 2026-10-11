@@ -9,13 +9,14 @@ export const systemDesign: VideoContent = {
     sections: [
         {
             id: "hook",
-            title: "Writing Code Is Only Half the Job",
+            title: "Why System Design Matters",
             text: `
-Writing code is only half the job.
+Why does System Design matter?
+
 
 What happens when millions of users start using your application?
 `,
-            audio: "audio/01-hook.mp3",
+            audio: "audio/system-design/hook.mp3",
         },
 
         {
@@ -27,7 +28,7 @@ or a million.
 
 The architecture has to evolve.
 `,
-            audio: "audio/02-problem.mp3",
+            audio: "audio/system-design/problem.mp3",
         },
 
         {
@@ -40,7 +41,7 @@ When traffic grows, we need to handle more requests without breaking the system.
 
 Instead of relying on one giant server, we can scale out by adding more machines behind a load balancer.
 `,
-            audio: "audio/03-scalability.mp3",
+            audio: "audio/system-design/scalability.mp3",
         },
 
         {
@@ -55,7 +56,7 @@ A server can go down at any time.
 
 With redundancy and failover, traffic can move to a replica, keeping the system alive.
 `,
-            audio: "audio/04-reliability.mp3",
+            audio: "audio/system-design/reliability.mp3",
         },
 
         {
@@ -68,7 +69,7 @@ You stop thinking only about code.
 
 You start thinking about services, systems, platforms, and trade-offs like scale, latency, cost, and failure.
 `,
-            audio: "audio/05-maturity.mp3",
+            audio: "audio/system-design/maturity.mp3",
         },
 
         {
@@ -81,7 +82,7 @@ The question isn't just whether you can write code.
 
 It's whether you can design a system that serves millions of users.
 `,
-            audio: "audio/06-interview.mp3",
+            audio: "audio/system-design/interview.mp3",
         },
 
         {
@@ -95,7 +96,7 @@ to services...
 to systems...
 and eventually entire platforms.
 `,
-            audio: "audio/07-career.mp3",
+            audio: "audio/system-design/career.mp3",
         },
 
         {
@@ -111,9 +112,9 @@ and finally, to real-world software.
 
 Learn the concepts.
 
-Then design the system.
+Then design the system. 
 `,
-            audio: "audio/08-final.mp3",
+            audio: "audio/system-design/final.mp3",
         },
     ],
 };

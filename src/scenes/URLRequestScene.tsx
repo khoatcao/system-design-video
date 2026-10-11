@@ -15,23 +15,37 @@ import { urlRequest } from "../../content/url-request";
 
 const timeline = createTimeline(urlRequest);
 
+const FPS = 30;
+
 const getAudioPath = (path: string) => {
     return path.replace(/^\/?public\//, "");
 };
 
-const fade = (frame: number, start: number, end: number) =>
-    interpolate(frame, [start, end], [0, 1], {
+const fade = (
+    frame: number,
+    start: number,
+    end: number,
+    from = 0,
+    to = 1
+) =>
+    interpolate(frame, [start, end], [from, to], {
         extrapolateLeft: "clamp",
         extrapolateRight: "clamp",
         easing: Easing.out(Easing.ease),
     });
 
-const slideUp = (frame: number, start: number, end: number) =>
-    interpolate(frame, [start, end], [40, 0], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-        easing: Easing.out(Easing.ease),
-    });
+/* =========================================================
+   HELPERS
+========================================================= */
+
+type NodeProps = {
+    x: number;
+    y: number;
+    title: string;
+    subtitle?: string;
+    active?: boolean;
+    small?: boolean;
+};
 
 const Node = ({
     x,
@@ -39,13 +53,8 @@ const Node = ({
     title,
     subtitle,
     active = false,
-}: {
-    x: number;
-    y: number;
-    title: string;
-    subtitle?: string;
-    active?: boolean;
-}) => {
+    small = false,
+}: NodeProps) => {
     return (
         <div
             style={{
@@ -53,22 +62,37 @@ const Node = ({
                 left: x,
                 top: y,
                 transform: "translate(-50%, -50%)",
-                width: 270,
-                padding: "28px 24px",
-                borderRadius: 24,
-                background: active ? "#ffffff" : "#171717",
-                border: `3px solid ${active ? "#ffffff" : "#444"}`,
+
+                width: small ? 180 : 270,
+                minHeight: small ? 80 : 110,
+
+                padding: small ? "16px 12px" : "22px 18px",
+
+                borderRadius: 20,
+
+                background: active
+                    ? "rgba(255,255,255,0.96)"
+                    : "rgba(23,23,23,0.95)",
+
+                border: `3px solid ${active ? "#ffffff" : "rgba(255,255,255,0.18)"
+                    }`,
+
                 color: active ? "#111" : "#fff",
+
                 textAlign: "center",
+
                 boxShadow: active
-                    ? "0 0 35px rgba(255,255,255,0.25)"
-                    : "none",
+                    ? "0 0 40px rgba(255,255,255,0.35)"
+                    : "0 10px 30px rgba(0,0,0,0.25)",
+
+                zIndex: 3,
             }}
         >
             <div
                 style={{
-                    fontSize: 30,
-                    fontWeight: 700,
+                    fontSize: small ? 23 : 30,
+                    fontWeight: 800,
+                    lineHeight: 1.1,
                 }}
             >
                 {title}
@@ -77,9 +101,9 @@ const Node = ({
             {subtitle && (
                 <div
                     style={{
-                        marginTop: 10,
-                        fontSize: 20,
-                        opacity: 0.65,
+                        marginTop: 8,
+                        fontSize: small ? 16 : 19,
+                        opacity: active ? 0.65 : 0.5,
                     }}
                 >
                     {subtitle}
@@ -89,19 +113,21 @@ const Node = ({
     );
 };
 
+type ArrowProps = {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    active?: boolean;
+};
+
 const Arrow = ({
     x1,
     y1,
     x2,
     y2,
-    opacity = 1,
-}: {
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-    opacity?: number;
-}) => {
+    active = false,
+}: ArrowProps) => {
     const length = Math.sqrt(
         Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
     );
@@ -115,15 +141,34 @@ const Arrow = ({
                 position: "absolute",
                 left: x1,
                 top: y1,
+
                 width: length,
-                height: 4,
-                background: "#666",
-                opacity,
+                height: active ? 6 : 4,
+
+                background: active ? "#ffffff" : "#444",
+
+                opacity: active ? 0.9 : 0.55,
+
                 transformOrigin: "left center",
+
                 transform: `rotate(${angle}deg)`,
+
+                boxShadow: active
+                    ? "0 0 12px rgba(255,255,255,0.6)"
+                    : "none",
+
+                zIndex: 1,
             }}
         />
     );
+};
+
+type PacketProps = {
+    progress: number;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
 };
 
 const Packet = ({
@@ -132,13 +177,7 @@ const Packet = ({
     y1,
     x2,
     y2,
-}: {
-    progress: number;
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
-}) => {
+}: PacketProps) => {
     const x = interpolate(progress, [0, 1], [x1, x2]);
     const y = interpolate(progress, [0, 1], [y1, y2]);
 
@@ -148,81 +187,256 @@ const Packet = ({
                 position: "absolute",
                 left: x,
                 top: y,
-                width: 24,
-                height: 24,
+
+                width: 26,
+                height: 26,
+
                 borderRadius: "50%",
-                background: "#fff",
+
+                background: "#ffffff",
+
                 transform: "translate(-50%, -50%)",
-                boxShadow: "0 0 25px rgba(255,255,255,0.7)",
+
+                boxShadow:
+                    "0 0 12px #ffffff, 0 0 35px rgba(255,255,255,0.7)",
+
+                zIndex: 10,
             }}
         />
     );
 };
 
-const Title = ({
-    frame,
-    start,
-    title,
-    subtitle,
-}: {
-    frame: number;
-    start: number;
-    title: string;
-    subtitle: string;
-}) => {
-    return (
-        <div
-            style={{
-                position: "absolute",
-                top: 220,
-                width: "100%",
-                textAlign: "center",
-                opacity: fade(frame, start, start + 20),
-                transform: `translateY(${slideUp(
-                    frame,
-                    start,
-                    start + 20
-                )}px)`,
-            }}
-        >
-            <div
-                style={{
-                    fontSize: 50,
-                    fontWeight: 800,
-                }}
-            >
-                {title}
-            </div>
+/* =========================================================
+   TIMELINE
+========================================================= */
 
-            <div
-                style={{
-                    marginTop: 20,
-                    fontSize: 28,
-                    opacity: 0.55,
-                }}
-            >
-                {subtitle}
-            </div>
-        </div>
-    );
+const getSection = (index: number) => {
+    return timeline.sections[index];
 };
+
+const hookSection = getSection(0);
+const dnsSection = getSection(1);
+const tcpSection = getSection(2);
+const tlsSection = getSection(3);
+const httpSection = getSection(4);
+const loadBalancerSection = getSection(5);
+const cacheSection = getSection(6);
+const responseSection = getSection(7);
+
+/* =========================================================
+   MAIN SCENE
+========================================================= */
 
 export const URLRequestScene: React.FC = () => {
     const frame = useCurrentFrame();
 
+    /*
+     * Keep your existing audio timeline.
+     */
+    const sections = timeline.sections;
+
+    /*
+     * Hook ends when DNS starts.
+     */
+    const architectureStart = dnsSection?.start ?? 150;
+
+    /*
+     * Determine which section is currently playing.
+     */
+    const isInSection = (section: any) => {
+        if (!section) return false;
+
+        return (
+            frame >= section.start &&
+            frame < section.start + section.duration
+        );
+    };
+
+    const dnsActive = isInSection(dnsSection);
+    const tcpActive = isInSection(tcpSection);
+    const tlsActive = isInSection(tlsSection);
+    const httpActive = isInSection(httpSection);
+    const loadBalancerActive = isInSection(loadBalancerSection);
+    const cacheActive = isInSection(cacheSection);
+    const responseActive = isInSection(responseSection);
+
+    /*
+     * =====================================================
+     * PACKET PATH
+     *
+     * One continuous path through the architecture.
+     * =====================================================
+     */
+
+    const path = [
+        { x: 540, y: 430 }, // Browser
+        { x: 540, y: 580 }, // DNS
+        { x: 540, y: 730 }, // TCP
+        { x: 540, y: 880 }, // TLS
+        { x: 540, y: 1030 }, // HTTP
+        { x: 540, y: 1180 }, // Load Balancer
+        { x: 540, y: 1325 }, // API
+        { x: 540, y: 1470 }, // Cache
+        { x: 540, y: 1615 }, // Database
+    ];
+
+    /*
+     * Map each section to a segment of the packet path.
+     */
+
+    const segmentProgress = (
+        section: any,
+        from: number,
+        to: number
+    ) => {
+        if (!section) return 0;
+
+        return interpolate(
+            frame,
+            [
+                section.start + section.duration * 0.18,
+                section.start + section.duration * 0.82,
+            ],
+            [from, to],
+            {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+            }
+        );
+    };
+
+    let packetProgress = 0;
+
+    if (dnsActive) {
+        packetProgress = segmentProgress(dnsSection, 0, 1);
+    } else if (tcpActive) {
+        packetProgress = segmentProgress(tcpSection, 1, 2);
+    } else if (tlsActive) {
+        packetProgress = segmentProgress(tlsSection, 2, 3);
+    } else if (httpActive) {
+        packetProgress = segmentProgress(httpSection, 3, 4);
+    } else if (loadBalancerActive) {
+        packetProgress = segmentProgress(loadBalancerSection, 4, 5);
+    } else if (cacheActive) {
+        packetProgress = segmentProgress(cacheSection, 6, 7);
+    } else if (responseActive) {
+        packetProgress = segmentProgress(responseSection, 8, 0);
+    }
+
+    /*
+     * Convert a path index into coordinates.
+     */
+    const getPathPoint = (index: number) => {
+        return path[index];
+    };
+
+    const getPacketPosition = () => {
+        if (dnsActive) {
+            const a = getPathPoint(0);
+            const b = getPathPoint(1);
+
+            return {
+                x: interpolate(packetProgress, [0, 1], [a.x, b.x]),
+                y: interpolate(packetProgress, [0, 1], [a.y, b.y]),
+            };
+        }
+
+        if (tcpActive) {
+            const a = getPathPoint(1);
+            const b = getPathPoint(2);
+
+            return {
+                x: interpolate(packetProgress, [0, 1], [a.x, b.x]),
+                y: interpolate(packetProgress, [0, 1], [a.y, b.y]),
+            };
+        }
+
+        if (tlsActive) {
+            const a = getPathPoint(2);
+            const b = getPathPoint(3);
+
+            return {
+                x: interpolate(packetProgress, [0, 1], [a.x, b.x]),
+                y: interpolate(packetProgress, [0, 1], [a.y, b.y]),
+            };
+        }
+
+        if (httpActive) {
+            const a = getPathPoint(3);
+            const b = getPathPoint(4);
+
+            return {
+                x: interpolate(packetProgress, [0, 1], [a.x, b.x]),
+                y: interpolate(packetProgress, [0, 1], [a.y, b.y]),
+            };
+        }
+
+        if (loadBalancerActive) {
+            const a = getPathPoint(4);
+            const b = getPathPoint(5);
+
+            return {
+                x: interpolate(packetProgress, [0, 1], [a.x, b.x]),
+                y: interpolate(packetProgress, [0, 1], [a.y, b.y]),
+            };
+        }
+
+        if (cacheActive) {
+            const a = getPathPoint(6);
+            const b = getPathPoint(7);
+
+            return {
+                x: interpolate(packetProgress, [0, 1], [a.x, b.x]),
+                y: interpolate(packetProgress, [0, 1], [a.y, b.y]),
+            };
+        }
+
+        if (responseActive) {
+            const a = getPathPoint(8);
+            const b = getPathPoint(0);
+
+            return {
+                x: interpolate(packetProgress, [0, 1], [a.x, b.x]),
+                y: interpolate(packetProgress, [0, 1], [a.y, b.y]),
+            };
+        }
+
+        return getPathPoint(0);
+    };
+
+    const packet = getPacketPosition();
+
+    /*
+     * =====================================================
+     * BACKGROUND
+     * =====================================================
+     */
+
+    const backgroundOpacity = fade(
+        frame,
+        architectureStart,
+        architectureStart + 30
+    );
+
     return (
         <AbsoluteFill
             style={{
-                background: "#080808",
+                background:
+                    "radial-gradient(circle at 50% 35%, #17202b 0%, #080808 55%, #030303 100%)",
+
                 color: "#fff",
+
                 fontFamily:
                     "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+
                 overflow: "hidden",
             }}
         >
-            {/* ================= AUDIO ================= */}
+            {/* =================================================
+                AUDIO
+            ================================================= */}
 
-            {timeline.sections.map((section) => (
+            {sections.map((section) => (
                 <Sequence
                     key={section.id}
                     from={section.start}
@@ -236,27 +450,31 @@ export const URLRequestScene: React.FC = () => {
                 </Sequence>
             ))}
 
-            {/* ================= HOOK ================= */}
+            {/* =================================================
+                HOOK
+            ================================================= */}
 
-            {frame < 180 && (
+            {frame < architectureStart + 30 && (
                 <AbsoluteFill
                     style={{
                         justifyContent: "center",
                         alignItems: "center",
                         textAlign: "center",
                         padding: 80,
+
+                        opacity:
+                            frame < architectureStart
+                                ? 1
+                                : fade(
+                                    frame,
+                                    architectureStart,
+                                    architectureStart + 30,
+                                    1,
+                                    0
+                                ),
                     }}
                 >
-                    <div
-                        style={{
-                            opacity: fade(frame, 10, 35),
-                            transform: `translateY(${slideUp(
-                                frame,
-                                10,
-                                35
-                            )}px)`,
-                        }}
-                    >
+                    <div>
                         <div
                             style={{
                                 fontSize: 42,
@@ -269,7 +487,7 @@ export const URLRequestScene: React.FC = () => {
 
                         <div
                             style={{
-                                fontSize: 64,
+                                fontSize: 70,
                                 fontWeight: 800,
                             }}
                         >
@@ -280,7 +498,11 @@ export const URLRequestScene: React.FC = () => {
                             style={{
                                 marginTop: 40,
                                 fontSize: 32,
-                                opacity: fade(frame, 45, 70),
+                                opacity: fade(
+                                    frame,
+                                    45,
+                                    70
+                                ),
                             }}
                         >
                             and hit Enter?
@@ -289,460 +511,474 @@ export const URLRequestScene: React.FC = () => {
                 </AbsoluteFill>
             )}
 
-            {/* ================= DNS ================= */}
+            {/* =================================================
+                CONTINUOUS ARCHITECTURE
+            ================================================= */}
 
-            {frame >= 150 && frame < 390 && (
-                <AbsoluteFill>
-                    <Title
-                        frame={frame}
-                        start={155}
-                        title="1. DNS"
-                        subtitle="Find the server's IP address"
+            {frame >= architectureStart && (
+                <AbsoluteFill
+                    style={{
+                        opacity: backgroundOpacity,
+                    }}
+                >
+                    {/* =================================================
+                        TITLE
+                    ================================================= */}
+
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 105,
+                            width: "100%",
+                            textAlign: "center",
+
+                            zIndex: 20,
+                        }}
+                    >
+                        <div
+                            style={{
+                                fontSize: 48,
+                                fontWeight: 800,
+                            }}
+                        >
+                            What Happens When You Type a URL?
+                        </div>
+
+                        <div
+                            style={{
+                                marginTop: 12,
+                                fontSize: 24,
+                                opacity: 0.5,
+                            }}
+                        >
+                            Browser → Server → Database → Response
+                        </div>
+                    </div>
+
+                    {/* =================================================
+                        STEP INDICATOR
+                    ================================================= */}
+
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 205,
+                            width: "100%",
+                            textAlign: "center",
+
+                            fontSize: 25,
+                            fontWeight: 700,
+
+                            opacity: 0.75,
+
+                            zIndex: 20,
+                        }}
+                    >
+                        {dnsActive && "1 · DNS"}
+                        {tcpActive && "2 · TCP Connection"}
+                        {tlsActive && "3 · TLS"}
+                        {httpActive && "4 · HTTP Request"}
+                        {loadBalancerActive && "5 · Load Balancer"}
+                        {cacheActive && "6 · Cache & Database"}
+                        {responseActive && "7 · Response"}
+                    </div>
+
+                    {/* =================================================
+                        CONNECTION LINES
+                    ================================================= */}
+
+                    <Arrow
+                        x1={540}
+                        y1={485}
+                        x2={540}
+                        y2={525}
+                        active={dnsActive}
                     />
+
+                    <Arrow
+                        x1={540}
+                        y1={635}
+                        x2={540}
+                        y2={675}
+                        active={tcpActive}
+                    />
+
+                    <Arrow
+                        x1={540}
+                        y1={785}
+                        x2={540}
+                        y2={825}
+                        active={tlsActive}
+                    />
+
+                    <Arrow
+                        x1={540}
+                        y1={935}
+                        x2={540}
+                        y2={975}
+                        active={httpActive}
+                    />
+
+                    <Arrow
+                        x1={540}
+                        y1={1085}
+                        x2={540}
+                        y2={1125}
+                        active={loadBalancerActive}
+                    />
+
+                    <Arrow
+                        x1={540}
+                        y1={1235}
+                        x2={540}
+                        y2={1270}
+                        active={cacheActive}
+                    />
+
+                    <Arrow
+                        x1={540}
+                        y1={1380}
+                        x2={540}
+                        y2={1415}
+                        active={cacheActive}
+                    />
+
+                    <Arrow
+                        x1={540}
+                        y1={1525}
+                        x2={540}
+                        y2={1560}
+                        active={cacheActive}
+                    />
+
+                    {/* =================================================
+                        NODES
+                    ================================================= */}
 
                     <Node
                         x={540}
-                        y={650}
+                        y={430}
                         title="Browser"
                         subtitle="google.com"
+                        active={
+                            frame < architectureStart + 45 ||
+                            responseActive
+                        }
                     />
 
                     <Node
                         x={540}
-                        y={1050}
+                        y={580}
                         title="DNS"
                         subtitle="Domain → IP"
-                        active
-                    />
-
-                    <Arrow
-                        x1={540}
-                        y1={790}
-                        x2={540}
-                        y2={910}
-                    />
-
-                    <Packet
-                        progress={interpolate(
-                            frame,
-                            [190, 260],
-                            [0, 1],
-                            {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
-                            }
-                        )}
-                        x1={540}
-                        y1={790}
-                        x2={540}
-                        y2={910}
-                    />
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 1210,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 30,
-                            opacity: fade(frame, 270, 300),
-                        }}
-                    >
-                        142.250.x.x
-                    </div>
-                </AbsoluteFill>
-            )}
-
-            {/* ================= TCP ================= */}
-
-            {frame >= 360 && frame < 600 && (
-                <AbsoluteFill>
-                    <Title
-                        frame={frame}
-                        start={365}
-                        title="2. TCP Connection"
-                        subtitle="Establish a reliable connection"
-                    />
-
-                    <Node
-                        x={300}
-                        y={800}
-                        title="Browser"
-                    />
-
-                    <Node
-                        x={780}
-                        y={800}
-                        title="Server"
-                    />
-
-                    <Arrow
-                        x1={440}
-                        y1={770}
-                        x2={640}
-                        y2={770}
-                    />
-
-                    <Arrow
-                        x1={640}
-                        y1={830}
-                        x2={440}
-                        y2={830}
-                    />
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 735,
-                            left: 0,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 24,
-                            opacity: 0.7,
-                        }}
-                    >
-                        SYN
-                    </div>
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 850,
-                            left: 0,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 24,
-                            opacity: 0.7,
-                        }}
-                    >
-                        SYN-ACK
-                    </div>
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 920,
-                            left: 0,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 26,
-                        }}
-                    >
-                        ACK ✓
-                    </div>
-                </AbsoluteFill>
-            )}
-
-            {/* ================= TLS ================= */}
-
-            {frame >= 570 && frame < 810 && (
-                <AbsoluteFill>
-                    <Title
-                        frame={frame}
-                        start={575}
-                        title="3. TLS"
-                        subtitle="Secure the connection"
-                    />
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            left: 540,
-                            top: 800,
-                            transform: "translate(-50%, -50%)",
-                            fontSize: 100,
-                        }}
-                    >
-                        🔒
-                    </div>
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 980,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 34,
-                            fontWeight: 700,
-                        }}
-                    >
-                        HTTPS
-                    </div>
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 1040,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 25,
-                            opacity: 0.6,
-                        }}
-                    >
-                        Encrypted communication
-                    </div>
-                </AbsoluteFill>
-            )}
-
-            {/* ================= HTTP ================= */}
-
-            {frame >= 780 && frame < 1050 && (
-                <AbsoluteFill>
-                    <Title
-                        frame={frame}
-                        start={785}
-                        title="4. HTTP Request"
-                        subtitle="The browser sends a request"
-                    />
-
-                    <Node
-                        x={280}
-                        y={800}
-                        title="Browser"
-                    />
-
-                    <Node
-                        x={800}
-                        y={800}
-                        title="Server"
-                    />
-
-                    <Arrow
-                        x1={420}
-                        y1={800}
-                        x2={660}
-                        y2={800}
-                    />
-
-                    <div
-                        style={{
-                            position: "absolute",
-                            left: 540,
-                            top: 690,
-                            transform: "translateX(-50%)",
-                            fontFamily: "monospace",
-                            fontSize: 34,
-                            fontWeight: 700,
-                        }}
-                    >
-                        GET /
-                    </div>
-
-                    <Packet
-                        progress={interpolate(
-                            frame,
-                            [850, 940],
-                            [0, 1],
-                            {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
-                            }
-                        )}
-                        x1={420}
-                        y1={800}
-                        x2={660}
-                        y2={800}
-                    />
-                </AbsoluteFill>
-            )}
-
-            {/* ================= LOAD BALANCER ================= */}
-
-            {frame >= 1020 && frame < 1290 && (
-                <AbsoluteFill>
-                    <Title
-                        frame={frame}
-                        start={1025}
-                        title="5. Load Balancer"
-                        subtitle="Route the request"
+                        active={dnsActive}
                     />
 
                     <Node
                         x={540}
-                        y={600}
-                        title="Load Balancer"
-                        active
+                        y={730}
+                        title="TCP"
+                        subtitle="Reliable connection"
+                        active={tcpActive}
                     />
+
+                    <Node
+                        x={540}
+                        y={880}
+                        title="TLS"
+                        subtitle="Encrypted connection"
+                        active={tlsActive}
+                    />
+
+                    <Node
+                        x={540}
+                        y={1030}
+                        title="HTTP"
+                        subtitle="GET /"
+                        active={httpActive}
+                    />
+
+                    <Node
+                        x={540}
+                        y={1180}
+                        title="Load Balancer"
+                        subtitle="Route request"
+                        active={loadBalancerActive}
+                    />
+
+                    {/* =================================================
+                        API SERVERS
+                    ================================================= */}
 
                     <Node
                         x={250}
-                        y={1050}
-                        title="API Server 1"
+                        y={1325}
+                        title="API 1"
+                        small
+                        active={loadBalancerActive}
                     />
 
                     <Node
                         x={540}
-                        y={1050}
-                        title="API Server 2"
+                        y={1325}
+                        title="API 2"
+                        small
+                        active={
+                            loadBalancerActive || cacheActive
+                        }
                     />
 
                     <Node
                         x={830}
-                        y={1050}
-                        title="API Server 3"
+                        y={1325}
+                        title="API 3"
+                        small
+                        active={loadBalancerActive}
                     />
 
-                    <Arrow
-                        x1={540}
-                        y1={700}
-                        x2={250}
-                        y2={900}
-                    />
-
-                    <Arrow
-                        x1={540}
-                        y1={700}
-                        x2={540}
-                        y2={900}
-                    />
-
-                    <Arrow
-                        x1={540}
-                        y1={700}
-                        x2={830}
-                        y2={900}
-                    />
-
-                    <Packet
-                        progress={interpolate(
-                            frame,
-                            [1090, 1170],
-                            [0, 1],
-                            {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
-                            }
-                        )}
-                        x1={540}
-                        y1={700}
-                        x2={540}
-                        y2={900}
-                    />
-                </AbsoluteFill>
-            )}
-
-            {/* ================= CACHE / DB ================= */}
-
-            {frame >= 1260 && frame < 1560 && (
-                <AbsoluteFill>
-                    <Title
-                        frame={frame}
-                        start={1265}
-                        title="6. Cache & Database"
-                        subtitle="The backend fetches the data"
-                    />
+                    {/* =================================================
+                        CACHE
+                    ================================================= */}
 
                     <Node
                         x={540}
-                        y={600}
-                        title="API Server"
-                    />
-
-                    <Node
-                        x={300}
-                        y={1050}
+                        y={1470}
                         title="Redis"
                         subtitle="Fast cache"
-                        active
+                        active={cacheActive}
                     />
 
+                    {/* =================================================
+                        DATABASE
+                    ================================================= */}
+
                     <Node
-                        x={780}
-                        y={1050}
+                        x={540}
+                        y={1615}
                         title="PostgreSQL"
                         subtitle="Persistent data"
+                        active={cacheActive}
                     />
+
+                    {/* =================================================
+                        LOAD BALANCER → API SERVERS
+                    ================================================= */}
 
                     <Arrow
-                        x1={500}
-                        y1={700}
-                        x2={330}
-                        y2={900}
-                    />
-
-                    <Arrow
-                        x1={580}
-                        y1={700}
-                        x2={750}
-                        y2={900}
-                    />
-                </AbsoluteFill>
-            )}
-
-            {/* ================= RESPONSE ================= */}
-
-            {frame >= 1530 && frame < 1800 && (
-                <AbsoluteFill>
-                    <Title
-                        frame={frame}
-                        start={1535}
-                        title="7. The Response"
-                        subtitle="The data travels back"
-                    />
-
-                    <Node
-                        x={540}
-                        y={600}
-                        title="Server"
-                    />
-
-                    <Node
-                        x={540}
-                        y={1100}
-                        title="Browser"
-                        subtitle="✨ Website"
-                        active
+                        x1={470}
+                        y1={1235}
+                        x2={250}
+                        y2={1280}
+                        active={loadBalancerActive}
                     />
 
                     <Arrow
                         x1={540}
-                        y1={700}
+                        y1={1235}
                         x2={540}
-                        y2={1000}
+                        y2={1270}
+                        active={loadBalancerActive}
                     />
 
-                    <Packet
-                        progress={interpolate(
-                            frame,
-                            [1600, 1690],
-                            [0, 1],
-                            {
-                                extrapolateLeft: "clamp",
-                                extrapolateRight: "clamp",
-                            }
-                        )}
+                    <Arrow
+                        x1={610}
+                        y1={1235}
+                        x2={830}
+                        y2={1280}
+                        active={loadBalancerActive}
+                    />
+
+                    {/* =================================================
+                        API → REDIS
+                    ================================================= */}
+
+                    <Arrow
                         x1={540}
-                        y1={700}
+                        y1={1380}
                         x2={540}
-                        y2={1000}
+                        y2={1415}
+                        active={cacheActive}
                     />
 
-                    <div
-                        style={{
-                            position: "absolute",
-                            bottom: 250,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 46,
-                            fontWeight: 800,
-                            opacity: fade(frame, 1700, 1740),
-                        }}
-                    >
-                        One click.
-                    </div>
+                    {/* =================================================
+                        REDIS → DATABASE
+                    ================================================= */}
 
-                    <div
-                        style={{
-                            position: "absolute",
-                            bottom: 180,
-                            width: "100%",
-                            textAlign: "center",
-                            fontSize: 36,
-                            opacity: fade(frame, 1740, 1770),
-                        }}
-                    >
-                        Dozens of operations.
-                    </div>
+                    <Arrow
+                        x1={540}
+                        y1={1525}
+                        x2={540}
+                        y2={1560}
+                        active={cacheActive}
+                    />
+
+                    {/* =================================================
+                        HTTP REQUEST LABEL
+                    ================================================= */}
+
+                    {httpActive && (
+                        <div
+                            style={{
+                                position: "absolute",
+
+                                top: 970,
+
+                                left: 580,
+
+                                fontFamily: "monospace",
+
+                                fontSize: 24,
+
+                                fontWeight: 700,
+
+                                opacity: fade(
+                                    frame,
+                                    httpSection?.start ?? 780,
+                                    (httpSection?.start ?? 780) +
+                                    20
+                                ),
+
+                                zIndex: 20,
+                            }}
+                        >
+                            GET / HTTP/1.1
+                        </div>
+                    )}
+
+                    {/* =================================================
+                        DNS RESULT
+                    ================================================= */}
+
+                    {dnsActive && (
+                        <div
+                            style={{
+                                position: "absolute",
+
+                                top: 625,
+
+                                left: 590,
+
+                                fontFamily: "monospace",
+
+                                fontSize: 22,
+
+                                opacity: 0.65,
+
+                                zIndex: 20,
+                            }}
+                        >
+                            142.250.x.x
+                        </div>
+                    )}
+
+                    {/* =================================================
+                        TLS LABEL
+                    ================================================= */}
+
+                    {tlsActive && (
+                        <div
+                            style={{
+                                position: "absolute",
+
+                                top: 835,
+
+                                left: 600,
+
+                                fontSize: 22,
+
+                                fontWeight: 700,
+
+                                opacity: 0.65,
+
+                                zIndex: 20,
+                            }}
+                        >
+                            🔒 HTTPS
+                        </div>
+                    )}
+
+                    {/* =================================================
+                        PACKET
+                    ================================================= */}
+
+                    {!responseActive && (
+                        <Packet
+                            progress={0}
+                            x1={packet.x}
+                            y1={packet.y}
+                            x2={packet.x}
+                            y2={packet.y}
+                        />
+                    )}
+
+                    {/* =================================================
+                        RESPONSE PACKET
+                    ================================================= */}
+
+                    {responseActive && (
+                        <Packet
+                            progress={0}
+                            x1={packet.x}
+                            y1={packet.y}
+                            x2={packet.x}
+                            y2={packet.y}
+                        />
+                    )}
+
+                    {/* =================================================
+                        RESPONSE MESSAGE
+                    ================================================= */}
+
+                    {responseActive && (
+                        <div
+                            style={{
+                                position: "absolute",
+
+                                bottom: 120,
+
+                                width: "100%",
+
+                                textAlign: "center",
+
+                                zIndex: 20,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontSize: 46,
+                                    fontWeight: 800,
+
+                                    opacity: fade(
+                                        frame,
+                                        responseSection?.start ??
+                                        1530,
+                                        (responseSection?.start ??
+                                            1530) + 25
+                                    ),
+                                }}
+                            >
+                                Response → Browser
+                            </div>
+
+                            <div
+                                style={{
+                                    marginTop: 15,
+
+                                    fontSize: 28,
+
+                                    opacity: fade(
+                                        frame,
+                                        (responseSection?.start ??
+                                            1530) + 20,
+                                        (responseSection?.start ??
+                                            1530) + 45
+                                    ),
+                                }}
+                            >
+                                The website is rendered.
+                            </div>
+                        </div>
+                    )}
                 </AbsoluteFill>
             )}
         </AbsoluteFill>

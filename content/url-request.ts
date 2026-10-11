@@ -1,4 +1,5 @@
 import { VideoContent } from "./types";
+
 export const urlRequest: VideoContent = {
     id: "url-request",
 
@@ -13,7 +14,7 @@ export const urlRequest: VideoContent = {
 What actually happens when you type a URL
 and hit Enter?
 `,
-            audio: "audio/hook.mp3",
+            audio: "audio/url-request/hook.mp3",
         },
 
         {
@@ -24,7 +25,7 @@ First, your browser needs to find the server's IP address.
 
 DNS translates the domain name into an IP address.
 `,
-            audio: "audio/dns.mp3",
+            audio: "audio/url-request/dns.mp3",
         },
 
         {
@@ -36,7 +37,7 @@ with the server.
 
 This creates a reliable connection for the request.
 `,
-            audio: "audio/tcp.mp3",
+            audio: "audio/url-request/tcp.mp3",
         },
 
         {
@@ -48,7 +49,7 @@ TLS encrypts the connection.
 
 Now the communication is secure.
 `,
-            audio: "audio/tls.mp3",
+            audio: "audio/url-request/tls.mp3",
         },
 
         {
@@ -61,7 +62,7 @@ For example:
 
 GET /
 `,
-            audio: "audio/http.mp3",
+            audio: "audio/url-request/http.mp3",
         },
 
         {
@@ -72,7 +73,7 @@ The request reaches a load balancer.
 
 It routes the request to one of the backend servers.
 `,
-            audio: "audio/backend.mp3",
+            audio: "audio/url-request/backend.mp3",
         },
 
         {
@@ -85,7 +86,7 @@ or a database.
 Redis can provide fast cached data,
 while PostgreSQL stores persistent data.
 `,
-            audio: "audio/database.mp3",
+            audio: "audio/url-request/database.mp3",
         },
 
         {
@@ -99,7 +100,7 @@ And the page appears.
 One click.
 Dozens of operations.
 `,
-            audio: "audio/response.mp3",
+            audio: "audio/url-request/response.mp3",
         },
     ],
 };

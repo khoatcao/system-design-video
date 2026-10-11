@@ -37,7 +37,6 @@ async function loadTopic(topic: string) {
         pathToFileURL(contentPath).href
     );
 
-    // Try to find the exported VideoContent object.
     const content = Object.values(module).find(
         (value: any) =>
             value &&
@@ -61,8 +60,12 @@ async function loadTopic(topic: string) {
     };
 }
 
-async function generateAudio(id: string, text: string) {
-    console.log(`Generating ${id}...`);
+async function generateAudio(
+    topic: string,
+    id: string,
+    text: string
+) {
+    console.log(`Generating ${topic}/${id}...`);
 
     const audio = await client.textToSpeech.convert(voiceId, {
         text,
@@ -79,6 +82,7 @@ async function generateAudio(id: string, text: string) {
     const outputPath = path.join(
         "public",
         "audio",
+        topic,
         `${id}.mp3`
     );
 
@@ -120,6 +124,7 @@ async function main() {
 
     for (const section of content.sections) {
         await generateAudio(
+            topic,
             section.id,
             section.text
         );

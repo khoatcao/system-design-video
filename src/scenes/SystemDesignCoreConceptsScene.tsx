@@ -447,83 +447,83 @@ const ConceptBox: React.FC<{
   frame,
   start,
 }) => {
-  const opacity = fade(frame, start, start + 12);
+    const opacity = fade(frame, start, start + 12);
 
-  const scale = interpolate(
-    frame,
-    [start, start + 12],
-    [0.92, 1],
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.out(Easing.back(1.4)),
-    }
-  );
+    const scale = interpolate(
+      frame,
+      [start, start + 12],
+      [0.92, 1],
+      {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+        easing: Easing.out(Easing.back(1.4)),
+      }
+    );
 
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: x,
-        top: y,
-        width,
-        height,
-        opacity,
-        transform: `scale(${scale})`,
-        border: `2px solid ${color}`,
-        borderRadius: 22,
-        background: "rgba(20,5,9,0.88)",
-        boxShadow: `0 0 35px ${color}20`,
-        display: "flex",
-        alignItems: "center",
-        padding: "0 25px",
-        boxSizing: "border-box",
-      }}
-    >
+    return (
       <div
         style={{
-          width: 90,
-          height: 90,
+          position: "absolute",
+          left: x,
+          top: y,
+          width,
+          height,
+          opacity,
+          transform: `scale(${scale})`,
+          border: `2px solid ${color}`,
+          borderRadius: 22,
+          background: "rgba(20,5,9,0.88)",
+          boxShadow: `0 0 35px ${color}20`,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        <VisualIcon type={icon} color={color} size={78} />
-      </div>
-
-      <div
-        style={{
-          marginLeft: 18,
+          padding: "0 25px",
+          boxSizing: "border-box",
         }}
       >
         <div
           style={{
-            fontSize: 27,
-            fontWeight: 900,
-            color: COLORS.white,
+            width: 90,
+            height: 90,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
           }}
         >
-          {title}
+          <VisualIcon type={icon} color={color} size={78} />
         </div>
 
-        {subtitle && (
+        <div
+          style={{
+            marginLeft: 18,
+          }}
+        >
           <div
             style={{
-              marginTop: 8,
-              fontSize: 18,
-              lineHeight: 1.35,
-              color,
+              fontSize: 27,
+              fontWeight: 900,
+              color: COLORS.white,
             }}
           >
-            {subtitle}
+            {title}
           </div>
-        )}
+
+          {subtitle && (
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 18,
+                lineHeight: 1.35,
+                color,
+              }}
+            >
+              {subtitle}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 /* ============================================================
    MINI NODE
@@ -1360,81 +1360,81 @@ export const SystemDesignCoreConceptsScene: React.FC = () => {
       </div>
 
       {/* ===================================================== */}
-        {/* 7. COMMUNICATION */}
-        {/* ===================================================== */}
+      {/* 7. COMMUNICATION */}
+      {/* ===================================================== */}
 
-        <div
+      <div
         style={{
-            position: "absolute",
-            inset: 0,
-            opacity: sectionOpacity(6),
+          position: "absolute",
+          inset: 0,
+          opacity: sectionOpacity(6),
         }}
-        >
+      >
         <SectionTitle
-            number="7"
-            title="Communication"
-            frame={frame}
-            start={1085}
-            color={COLORS.blue}
+          number="7"
+          title="Communication"
+          frame={frame}
+          start={1085}
+          color={COLORS.blue}
         />
 
         {/* REST */}
         <div
-            style={{
+          style={{
             position: "absolute",
             top: 470,
             left: 120,
-            }}
+          }}
         >
-            <MiniNode
+          <MiniNode
             title="REST"
             icon="api"
             color={COLORS.green}
             frame={frame}
             start={1110}
             width={270}
-            />
+          />
         </div>
 
         {/* gRPC */}
         <div
-            style={{
+          style={{
             position: "absolute",
             top: 470,
             left: 405,
-            }}
+          }}
         >
-            <MiniNode
+          <MiniNode
             title="gRPC"
             icon="network"
             color={COLORS.blue}
             frame={frame}
             start={1130}
             width={270}
-            />
+          />
         </div>
 
         {/* GraphQL */}
         <div
-            style={{
+          style={{
             position: "absolute",
             top: 470,
             left: 690,
-            }}
+          }}
         >
-            <MiniNode
+          <MiniNode
             title="GraphQL"
             icon="api"
             color={COLORS.purple}
             frame={frame}
             start={1150}
             width={270}
-            />
+          />
         </div>
 
         {/* Communication visual */}
         <div
-            style={{
+          style={{
             position: "absolute",
             top: 680,
             left: 100,
@@ -1442,53 +1442,53 @@ export const SystemDesignCoreConceptsScene: React.FC = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            }}
+          }}
         >
-            <MiniNode
+          <MiniNode
             title="Client"
             icon="users"
             color={COLORS.orange}
             frame={frame}
             start={1170}
-            />
+          />
 
-            <div
+          <div
             style={{
-                flex: 1,
-                height: 4,
-                margin: "0 20px",
-                background: COLORS.white,
-                opacity: fade(frame, 1180, 1190),
+              flex: 1,
+              height: 4,
+              margin: "0 20px",
+              background: COLORS.white,
+              opacity: fade(frame, 1180, 1190),
             }}
-            />
+          />
 
-            <MiniNode
+          <MiniNode
             title="API"
             icon="api"
             color={COLORS.blue}
             frame={frame}
             start={1185}
-            />
+          />
 
-            <div
+          <div
             style={{
-                flex: 1,
-                height: 4,
-                margin: "0 20px",
-                background: COLORS.white,
-                opacity: fade(frame, 1195, 1205),
+              flex: 1,
+              height: 4,
+              margin: "0 20px",
+              background: COLORS.white,
+              opacity: fade(frame, 1195, 1205),
             }}
-            />
+          />
 
-            <MiniNode
+          <MiniNode
             title="Service"
             icon="server"
             color={COLORS.green}
             frame={frame}
             start={1200}
-            />
+          />
         </div>
-        </div>
+      </div>
 
       {/* ===================================================== */}
       {/* 8. DISTRIBUTED SYSTEMS */}
