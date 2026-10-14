@@ -175,6 +175,41 @@ const AUDIO_DURATIONS: AudioDuration = {
     "audio/microservice-patterns/ending.mp3": 13.328254,
     "audio/microservice-patterns/cta.mp3": 13.885533,
 
+
+    // =====================================================
+    // Saga vs. Two-Phase Commit
+    // =====================================================
+    "audio/saga-vs-2pc/hook.mp3": 15.789569,
+    "audio/saga-vs-2pc/two-phase-commit.mp3": 21.966077,
+    "audio/saga-vs-2pc/saga-pattern.mp3": 25.588390,
+    "audio/saga-vs-2pc/comparison.mp3": 22.523356,
+    "audio/saga-vs-2pc/ending.mp3": 7.894785,
+    "audio/saga-vs-2pc/cta.mp3": 10.959819,
+
+    // =====================================================
+    // API Security Patterns
+    // =====================================================
+    "audio/api-security-patterns/hook.mp3": 17.600726,
+    "audio/api-security-patterns/oauth2-jwt.mp3": 27.445986,
+    "audio/api-security-patterns/mtls.mp3": 23.498594,
+    "audio/api-security-patterns/waf-sanitization.mp3": 24.613152,
+    "audio/api-security-patterns/rate-limiting.mp3": 21.594558,
+    "audio/api-security-patterns/comparison.mp3": 23.452154,
+    "audio/api-security-patterns/ending.mp3": 9.798821,
+    "audio/api-security-patterns/cta.mp3": 4.736871,
+
+    // =====================================================
+    // Observability Pillars
+    // =====================================================
+    "audio/observability-pillars/hook.mp3": 11.424218,
+    "audio/observability-pillars/metrics.mp3": 14.164172,
+    "audio/observability-pillars/logs.mp3": 15.603810,
+    "audio/observability-pillars/distributed-tracing.mp3": 14.257052,
+    "audio/observability-pillars/comparison.mp3": 12.910295,
+    "audio/observability-pillars/ending.mp3": 7.058866,
+    "audio/observability-pillars/cta.mp3": 10.123900,
+
+
 };
 
 export function createTimeline(content: VideoContent) {

@@ -14,7 +14,9 @@ import { ApiRateLimitingScene } from "./scenes/ApiRateLimitingScene";
 import { DatabaseDeadlocksScene } from "./scenes/DatabaseDeadlocksScene";
 import { CircuitBreakerScene } from "./scenes/CircuitBreakerScene";
 import { MicroservicePatternsScene } from "./scenes/MicroservicePatternsScene";
-
+import { SagaVs2PCScene } from "./scenes/SagaVs2PCScene";
+import { ApiSecurityPatternsScene } from "./scenes/ApiSecurityPatternsScene";
+import { ObservabilityPillarsScene } from "./scenes/ObservabilityPillarsScene";
 
 import { systemDesign } from "../content/system-design";
 import { urlRequest } from "../content/url-request";
@@ -26,15 +28,18 @@ import microservicesCommunication from "../content/microservices-communication";
 import { apiRateLimiting } from "../content/api-rate-limiting";
 import { databaseDeadlocks } from "../content/database-deadlocks";
 import { microservicePatterns } from "../content/microservice-patterns";
-
+import { sagaVs2pc } from "../content/saga-vs-2pc";
 import {
   CachingStrategiesScene,
   CACHING_STRATEGIES_DURATION,
 } from "./scenes/CachingStrategiesScene";
 import { circuitBreaker } from "../content/circuit-breaker";
-
+import { apiSecurityPatterns } from "../content/api-security-patterns";
+import { observabilityPillars } from "../content/observability-pillars";
 
 import { FPS, createTimeline } from "./timeline";
+
+
 
 const timeline = createTimeline(systemDesign);
 const urlTimeline = createTimeline(urlRequest);
@@ -58,7 +63,9 @@ const databaseDeadlocksTimeline = createTimeline(
 const circuitBreakerTimeline = createTimeline(circuitBreaker);
 const microservicePatternsTimeline = createTimeline(microservicePatterns);
 
-
+const sagaVs2pcTimeline = createTimeline(sagaVs2pc);
+const apiSecurityPatternsTimeline = createTimeline(apiSecurityPatterns);
+const observabilityPillarsTimeline = createTimeline(observabilityPillars);
 
 type Props = {};
 
@@ -205,6 +212,32 @@ export const MyComposition = () => {
         height={1920}
       />
 
+      <Composition
+        id="SagaVs2PC"
+        component={SagaVs2PCScene}
+        durationInFrames={sagaVs2pcTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="ApiSecurityPatterns"
+        component={ApiSecurityPatternsScene}
+        durationInFrames={apiSecurityPatternsTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="ObservabilityPillars"
+        component={ObservabilityPillarsScene}
+        durationInFrames={observabilityPillarsTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
     </>
   );
 };
