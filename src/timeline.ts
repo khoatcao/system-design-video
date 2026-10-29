@@ -201,14 +201,72 @@ const AUDIO_DURATIONS: AudioDuration = {
     // =====================================================
     // Observability Pillars
     // =====================================================
-    "audio/observability-pillars/hook.mp3": 11.424218,
-    "audio/observability-pillars/metrics.mp3": 14.164172,
-    "audio/observability-pillars/logs.mp3": 15.603810,
-    "audio/observability-pillars/distributed-tracing.mp3": 14.257052,
-    "audio/observability-pillars/comparison.mp3": 12.910295,
-    "audio/observability-pillars/ending.mp3": 7.058866,
-    "audio/observability-pillars/cta.mp3": 10.123900,
+    "audio/observability-pillars/hook.mp3": 13.839093,
+    "audio/observability-pillars/metrics.mp3": 9.891701,
+    "audio/observability-pillars/logs.mp3": 9.241542,
+    "audio/observability-pillars/distributed-tracing.mp3": 19.736961,
+    "audio/observability-pillars/comparison.mp3": 17.136327,
+    "audio/observability-pillars/ending.mp3": 7.848345,
+    "audio/observability-pillars/cta.mp3": 6.037188,
 
+    // =====================================================
+    // Distributed Tracing
+    // =====================================================
+    "audio/distributed-tracing/hook.mp3": 10.866939,
+    "audio/distributed-tracing/correlation-id.mp3": 17.275646,
+    "audio/distributed-tracing/trace-id.mp3": 16.811247,
+    "audio/distributed-tracing/span-id.mp3": 16.997007,
+    "audio/distributed-tracing/comparison.mp3": 14.303492,
+    "audio/distributed-tracing/ending.mp3": 8.126984,
+    "audio/distributed-tracing/cta.mp3": 9.520181,
+
+
+    // =====================================================
+    // mTLS
+    // =====================================================
+    "audio/mtls/hook.mp3": 4.411791,
+    "audio/mtls/tls-vs-mtls.mp3": 11.331338,
+    "audio/mtls/service-identity.mp3": 13.560454,
+    "audio/mtls/certificate-rejection.mp3": 10.495420,
+    "audio/mtls/auto-rotation.mp3": 13.885533,
+    "audio/mtls/ending.mp3": 14.396372,
+    "audio/mtls/cta.mp3": 7.012426,
+
+    "audio/transactional-outbox/atomic-write.mp3": 18.761723,
+    "audio/transactional-outbox/cta.mp3": 9.473741,
+    "audio/transactional-outbox/ending.mp3": 14.071293,
+    "audio/transactional-outbox/hook.mp3": 16.718367,
+    "audio/transactional-outbox/problem.mp3": 16.997007,
+    "audio/transactional-outbox/relay.mp3": 21.130159,
+    "audio/transactional-outbox/reliability.mp3": 22.662676,
+
+
+    "audio/cdn/benefits.mp3": 8.637823,
+    "audio/cdn/cache-miss.mp3": 10.820499,
+    "audio/cdn/cdn-intro.mp3": 9.845261,
+    "audio/cdn/cta.mp3": 8.080544,
+    "audio/cdn/edge-routing.mp3": 10.309660,
+    "audio/cdn/ending.mp3": 4.504671,
+    "audio/cdn/hook.mp3": 4.643991,
+    "audio/cdn/problem.mp3": 12.213696,
+
+    "audio/polling-vs-webhooks/comparison.mp3": 10.216780,
+    "audio/polling-vs-webhooks/cta.mp3": 9.148662,
+    "audio/polling-vs-webhooks/ending.mp3": 7.523265,
+    "audio/polling-vs-webhooks/hook.mp3": 4.876190,
+    "audio/polling-vs-webhooks/polling.mp3": 8.962902,
+    "audio/polling-vs-webhooks/problem.mp3": 9.102222,
+    "audio/polling-vs-webhooks/use-cases.mp3": 7.383946,
+    "audio/polling-vs-webhooks/webhooks.mp3": 10.634739,
+
+    "audio/message-queues/cta.mp3": 3.390113,
+    "audio/message-queues/failure.mp3": 9.241542,
+    "audio/message-queues/hook.mp3": 3.297234,
+    "audio/message-queues/incident.mp3": 6.640907,
+    "audio/message-queues/recovery.mp3": 10.077460,
+    "audio/message-queues/solution.mp3": 9.798821,
+    "audio/message-queues/takeaway.mp3": 4.876190,
+    "audio/message-queues/tradeoff.mp3": 9.055782,
 
 };
 

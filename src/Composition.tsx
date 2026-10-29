@@ -17,7 +17,14 @@ import { MicroservicePatternsScene } from "./scenes/MicroservicePatternsScene";
 import { SagaVs2PCScene } from "./scenes/SagaVs2PCScene";
 import { ApiSecurityPatternsScene } from "./scenes/ApiSecurityPatternsScene";
 import { ObservabilityPillarsScene } from "./scenes/ObservabilityPillarsScene";
+import { PollingVsWebhooksScene } from "./scenes/polling-vs-webhooks";
+import { MessageQueuesScene } from "./scenes/MessageQueuesScene";
 
+// ✅ Correct
+import { DistributedTracingScene } from "./scenes/DistributedTracingScene";
+import { MtlsScene } from "./scenes/MtlsScene";
+import { TransactionalOutboxScene } from "./scenes/TransactionalOutboxScene";
+import { CdnScene } from "./scenes/cdn";
 import { systemDesign } from "../content/system-design";
 import { urlRequest } from "../content/url-request";
 import { loadBalancer } from "../content/load-balancer";
@@ -36,7 +43,12 @@ import {
 import { circuitBreaker } from "../content/circuit-breaker";
 import { apiSecurityPatterns } from "../content/api-security-patterns";
 import { observabilityPillars } from "../content/observability-pillars";
-
+import { distributedTracing } from "../content/distributed-tracing";
+import { cdn } from "../content/cdn";
+import { mtls } from "../content/mtls";
+import { transactionalOutbox } from "../content/transactional-outbox";
+import { pollingVsWebhooks } from "../content/polling-vs-webhooks";
+import { messageQueuesContent } from "../content/message-queues";
 import { FPS, createTimeline } from "./timeline";
 
 
@@ -66,7 +78,12 @@ const microservicePatternsTimeline = createTimeline(microservicePatterns);
 const sagaVs2pcTimeline = createTimeline(sagaVs2pc);
 const apiSecurityPatternsTimeline = createTimeline(apiSecurityPatterns);
 const observabilityPillarsTimeline = createTimeline(observabilityPillars);
-
+const distributedTracingTimeline = createTimeline(distributedTracing);
+const mtlsTimeline = createTimeline(mtls);
+const transactionalOutboxTimeline = createTimeline(transactionalOutbox);
+const cdnTimeline = createTimeline(cdn);
+const pollingVsWebhooksTimeline = createTimeline(pollingVsWebhooks);
+const messageQueuesTimeline = createTimeline(messageQueuesContent);
 type Props = {};
 
 export const MyComponent: React.FC<Props> = () => {
@@ -234,6 +251,60 @@ export const MyComposition = () => {
         id="ObservabilityPillars"
         component={ObservabilityPillarsScene}
         durationInFrames={observabilityPillarsTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="DistributedTracing"
+        component={DistributedTracingScene}
+        durationInFrames={Math.ceil(93.901496 * 30)}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="Mtls"
+        component={MtlsScene}
+        durationInFrames={mtlsTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="transactional-outbox"
+        component={TransactionalOutboxScene}
+        durationInFrames={transactionalOutboxTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="CDN"
+        component={CdnScene}
+        durationInFrames={cdnTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="PollingVsWebhooks"
+        component={PollingVsWebhooksScene}
+        durationInFrames={pollingVsWebhooksTimeline.totalFrames}
+        fps={FPS}
+        width={1080}
+        height={1920}
+      />
+
+      <Composition
+        id="MessageQueues"
+        component={MessageQueuesScene}
+        durationInFrames={messageQueuesTimeline.totalFrames}
         fps={FPS}
         width={1080}
         height={1920}
